@@ -1,11 +1,11 @@
-import dataSet from 'data-sets/MitiManager/Chat/01-Chat-With-Registered-User.dataset.json';
+import dataSet from 'data-sets/TempManager/Chat/01-Chat-With-Registered-User.dataset.json';
 import BrowserManager from 'actions/BrowserManager';
 import PageProvider from '__tests__/PageProvider';
 import { Browser } from 'playwright';
-import MainMenuPage from 'pages/miti-square/MainMenuPage';
-import MitiManagerHomePage from 'pages/miti-manager/transactions/MitiManagerHomePage';
-import ViewTransactionPage from 'pages/miti-manager/transactions/ViewTransactionPage';
-import ConversationsModal from 'pages/miti-manager/transactions/ConversationsModal';
+import MainMenuPage from 'pages/Temp-square/MainMenuPage';
+import TempManagerHomePage from 'pages/Temp-manager/transactions/TempManagerHomePage';
+import ViewTransactionPage from 'pages/Temp-manager/transactions/ViewTransactionPage';
+import ConversationsModal from 'pages/Temp-manager/transactions/ConversationsModal';
 import DateCalculator from 'utilities/DateCalculator';
 import envProfile from 'data-sets/env-profile';
 import ScenarioHelper from 'actions/ScenarioHelper';
@@ -17,14 +17,14 @@ describe('Chat with registered users within same enterprise', () => {
     const SCENARIO_LOAD_TIMEOUT: number = envProfile.scenarioLoadTimeOutInMilliSeconds;
     const EMAIL_TIMEOUT_FOR_REGISTERED_USERS: number = envProfile.emailLongTimeOutInMilliSeconds * 2;
     const EMAIL_LONG_TIMEOUT: number = envProfile.emailLongTimeOutInMilliSeconds;
-    const EMAIL_BODY_NEW_MESSAGE_NOTIFICATION_TEXT: string = `You have received new messages for transaction #${dataSet.transactionNumber} - ${dataSet.user.companyPublicName} in Mitigram`;
+    const EMAIL_BODY_NEW_MESSAGE_NOTIFICATION_TEXT: string = `You have received new messages for transaction #${dataSet.transactionNumber} - ${dataSet.user.companyPublicName} in Tempgram`;
     const MESSAGE_SENDER: string = `${dataSet.user.fullName} (${dataSet.user.company})`;
     const EXPECTED_CHAT_DATE_TIME_REGEX: RegExp = new RegExp(`^${DateCalculator.getCurrentDateAndFormatDDMonthYYYYSeparatedBySpaces()}\\sat\\s\\d+:\\d+\\sUTC$`);
 
     let browser: Browser;
     let loginApiActions: LoginApiActions;
     let mainMenuPage: MainMenuPage;
-    let mitiManagerHomePage: MitiManagerHomePage;
+    let TempManagerHomePage: TempManagerHomePage;
     let viewTransactionPage: ViewTransactionPage;
     let conversationsModal: ConversationsModal;
     let emailManager: EmailManager;
@@ -39,7 +39,7 @@ describe('Chat with registered users within same enterprise', () => {
         await BrowserManager.setupNewPage(browser);
         loginApiActions = PageProvider.loginApiActions;
         mainMenuPage = PageProvider.mainMenuPage;
-        mitiManagerHomePage = PageProvider.mitiManagerHomePage;
+        TempManagerHomePage = PageProvider.TempManagerHomePage;
         viewTransactionPage = PageProvider.viewTransactionPage;
         conversationsModal = PageProvider.conversationsModal;
         emailManager = PageProvider.emailManager;
@@ -52,14 +52,14 @@ describe('Chat with registered users within same enterprise', () => {
         await expect(emailManager.getEmailCount(dataSet.conversation1.participant.email)).resolves.toBe(0);
     });
 
-    test(`Log in as ${dataSet.user.email} and verify navigation to MitiManager home page`, async () => {
-        await loginApiActions.signInAndNavigateToMitiManagerHomePage(dataSet.user.email);
+    test(`Log in as ${dataSet.user.email} and verify navigation to TempManager home page`, async () => {
+        await loginApiActions.signInAndNavigateToTempManagerHomePage(dataSet.user.email);
 
-        await expect(mitiManagerHomePage.shouldMitiManagerHomePageDisplayed()).resolves.toBeTruthy();
+        await expect(TempManagerHomePage.shouldTempManagerHomePageDisplayed()).resolves.toBeTruthy();
     });
 
     test('Click on existing Export LC transaction from grid and verify that view transaction page is displayed', async () => {
-        await mitiManagerHomePage.clickOnTransactionId(dataSet.transactionId);
+        await TempManagerHomePage.clickOnTransactionId(dataSet.transactionId);
         await viewTransactionPage.clickOnMaximizeView();
 
         await expect(viewTransactionPage.waitForViewTransactionPageToBeDisplayed(dataSet.transactionId)).resolves.toBeTruthy();
@@ -171,7 +171,7 @@ describe('Chat with registered users within same enterprise', () => {
         });
 
         test('Get current page URL', () => {
-            transactionsPageUrl = mitiManagerHomePage.getCurrentURL();
+            transactionsPageUrl = TempManagerHomePage.getCurrentURL();
 
             expect(transactionsPageUrl).toMatch(/\/transactions\/\d+$/);
         });
@@ -251,24 +251,24 @@ describe('Chat with registered users within same enterprise', () => {
     });
 
     describe('Check messages from recipient´s account:', () => {
-        test(`Log in as ${dataSet.user2.email} and verify navigation to MitiManager home page`, async () => {
+        test(`Log in as ${dataSet.user2.email} and verify navigation to TempManager home page`, async () => {
             await loginApiActions.signInAndVerifyMainMenuPageIsDisplayed(dataSet.user2.email);
 
             await mainMenuPage.openMenu();
-            await mainMenuPage.clickOnMitiManagerLink();
+            await mainMenuPage.clickOnTempManagerLink();
 
-            await expect(mitiManagerHomePage.shouldMitiManagerHomePageDisplayed()).resolves.toBeTruthy();
+            await expect(TempManagerHomePage.shouldTempManagerHomePageDisplayed()).resolves.toBeTruthy();
         });
 
         test('Verify that "Unread message badge" on top navigation bar is visible and displays "2"', async () => {
-            await expect(mitiManagerHomePage.shouldTopUnreadMessageBadgeVisible({ timeout: envProfile.emailLongTimeOutInMilliSeconds, })).resolves.toBeTruthy();
-            await expect(mitiManagerHomePage.getUnreadMessageCount()).resolves.toBe(1);
+            await expect(TempManagerHomePage.shouldTopUnreadMessageBadgeVisible({ timeout: envProfile.emailLongTimeOutInMilliSeconds, })).resolves.toBeTruthy();
+            await expect(TempManagerHomePage.getUnreadMessageCount()).resolves.toBe(1);
         });
 
         test('Verify that transaction number, conversation title and number of unread messages(2) are visible in notification message', async () => {
-            await mitiManagerHomePage.clickOnTopChatButton();
+            await TempManagerHomePage.clickOnTopChatButton();
 
-            await mitiManagerHomePage.getUnreadMessageContent().then(unreadMessageRetrieved => {
+            await TempManagerHomePage.getUnreadMessageContent().then(unreadMessageRetrieved => {
                 expect(unreadMessageRetrieved).toContain(`Transaction #${dataSet.transactionId}`);
                 expect(unreadMessageRetrieved).toContain(dataSet.conversation2.title);
                 expect(unreadMessageRetrieved.split('\n')[1]).toBe('1');
@@ -276,7 +276,7 @@ describe('Chat with registered users within same enterprise', () => {
         });
 
         test('Verify that "Unread message badge" on top navigation bar is visible and displays "1"', async () => {
-            await mitiManagerHomePage.clickOnUnreadMessageLink();
+            await TempManagerHomePage.clickOnUnreadMessageLink();
 
             await expect(conversationsModal.shouldConversationContentsModalBeDisplayed()).resolves.toBeTruthy();
         });
